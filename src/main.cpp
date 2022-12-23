@@ -1,37 +1,58 @@
 #include <ArduinoBLE.h>
 #include <BLEDevice.h>
 
-
 // Declare an BLEDevice object
-BLEDevice device;
+
 
 void setup() {
-  // Initialize the BLE library
+  Serial.begin(115200);
+  while (!Serial) {
+    delay(10);
+  }
+
+  Serial.println("Initializing BLE device...");
   BLE.begin();
 
-  // Scan for BLE devices
+  Serial.println("Scanning for devices...");
   BLE.scan();
+
+  BLE.setLocalName("M5-stack");
+  // ...  
+  // start advertising
+  BLE.advertise();
+
+  
 }
 
 void loop() {
-  // Poll the BLE library for events
-  device.poll();
+  BLE.poll();
 
-  // Check if the device is connected
-  if (!device.connected()) {
-    // If the device is not connected, try to connect to it
-    device.connect();
+  if (BLE.available()) {
+    BLEDevice device = BLE.available();
+    Serial.print("Device found: ");
+    Serial.println(device.address());
+    Serial.print("RSSI: ");
+    Serial.println(device.rssi());
+    Serial.print("has local Name: ");
+    Serial.println(device.hasLocalName());
+//
+    /* Serial.print("hasCharacteristic: ");
+    Serial.println(device.hasCharacteristic()); */
+
+    Serial.print("advertisedServiceUuid: ");
+    Serial.println(device.advertisedServiceUuid());
+
+   /*  Serial.print("characteristic: ");
+    Serial.println(device.characteristic()); */
+
+    Serial.print("device name: ");
+    Serial.println(device.deviceName());
+    
+
+   
   }
 
-int rssi = device.rssi();
+delay(3000);
 
-// If the RSSI value is greater than or equal to -60, the device is considered "near"
-if (rssi >= -60) {
-  Serial.println("near");
-}
-// Otherwise, the device is considered "far"
-else {
-  Serial.println("far");
-}
 
 }
