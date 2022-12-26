@@ -1,58 +1,79 @@
-#include <ArduinoBLE.h>
-#include <BLEDevice.h>
+/*
+  Scan
 
-// Declare an BLEDevice object
+  This example scans for Bluetooth® Low Energy peripherals and prints out their advertising details:
+  address, local name, advertised service UUID's.
+
+  The circuit:
+  - Arduino MKR WiFi 1010, Arduino Uno WiFi Rev2 board, Arduino Nano 33 IoT,
+    Arduino Nano 33 BLE, or Arduino Nano 33 BLE Sense board.
+
+  This example code is in the public domain.
+*/
+
+#include <ArduinoBLE.h>
 
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) {
-    delay(10);
+  while (!Serial);
+
+  // begin initialization
+  if (!BLE.begin()) {
+    Serial.println("starting Bluetooth® Low Energy module failed!");
+
+    while (1);
   }
 
-  Serial.println("Initializing BLE device...");
-  BLE.begin();
+  Serial.println("Bluetooth® Low Energy Central scan");
 
-  Serial.println("Scanning for devices...");
+  // start scanning for peripheral
   BLE.scan();
-
-  BLE.setLocalName("M5-stack");
-  // ...  
-  // start advertising
-  BLE.advertise();
-
-  
 }
 
+
+
 void loop() {
-  BLE.poll();
+  // check if a peripheral has been discovered
+  BLEDevice peripheral = BLE.available();
 
-  if (BLE.available()) {
-    BLEDevice device = BLE.available();
-    Serial.print("Device found: ");
-    Serial.println(device.address());
+  if (peripheral) {
+    // discovered a peripheral
+    Serial.println("Discovered a peripheral");
+    Serial.println("-----------------------");
+
+    // print address
+    Serial.print("Address: ");
+    Serial.println(peripheral.address());
+
+    // print the local name, if present
+    if (peripheral.hasLocalName()) {
+      Serial.print("Local Name: ");
+      Serial.println(peripheral.localName());
+    }
+
+    // print the advertised service UUIDs, if present
+    if (peripheral.hasAdvertisedServiceUuid()) {
+      Serial.print("Service UUIDs: ");
+      for (int i = 0; i < peripheral.advertisedServiceUuidCount(); i++) {
+        Serial.print(peripheral.advertisedServiceUuid(i));
+        Serial.print(" ");
+
+        if(peripheral.advertisedServiceUuid(i)=="feaa"){
+
+          Serial.print("this is device for BEACON");
+
+        }
+
+      }
+      Serial.println();
+    }
+
+    // print the RSSI
     Serial.print("RSSI: ");
-    Serial.println(device.rssi());
-    Serial.print("has local Name: ");
-    Serial.println(device.hasLocalName());
-//
-    /* Serial.print("hasCharacteristic: ");
-    Serial.println(device.hasCharacteristic()); */
+    Serial.println(peripheral.rssi());
 
-    Serial.print("advertisedServiceUuid: ");
-    Serial.println(device.advertisedServiceUuid());
-
-   /*  Serial.print("characteristic: ");
-    Serial.println(device.characteristic()); */
-
-    Serial.print("device name: ");
-    Serial.println(device.deviceName());
+    Serial.println();
     
-
-   
   }
-
-delay(3000);
-
-
 }
