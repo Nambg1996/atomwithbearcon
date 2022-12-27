@@ -1,9 +1,12 @@
 #include <WiFi.h>
+#include <iostream>
+#include <iostream>
+#include <ArduinoHttpClient.h>
 
-//const char* ssid = "ASUKA5";
-//const char* password = "2019kyohei2019";
-const char* ssid = "Galaxy A71A1D5";
-const char* password = "ycup4087";
+const char* ssid = "ASUKA5";
+const char* password = "2019kyohei2019";
+//const char* ssid = "Galaxy A71A1D5";
+//const char* password = "ycup4087";
 
 void setup() {
 
