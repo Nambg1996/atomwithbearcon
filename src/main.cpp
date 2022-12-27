@@ -3,11 +3,18 @@
 #include <iostream>
 #include <ArduinoHttpClient.h>
 #include <Ethernet.h>
-#include <WiFi101.h>
+#include <HTTPClient.h>
+
 //const char* ssid = "ASUKA5";
 //const char* password = "2019kyohei2019";
 const char* ssid = "Galaxy A71A1D5";
 const char* password = "ycup4087";
+
+const char* serverAddress = "www.example.com";
+const int port = 80;
+
+WiFiClient wifi;
+HttpClient client = HttpClient(wifi, serverAddress, port);
 
 void setup() {
 
@@ -24,10 +31,18 @@ void setup() {
   Serial.println(ssid);
   Serial.println(WiFi.localIP());
 
-  byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-  IPAddress ip(192, 168, 1, 177);
 
-  HttpClient client = HttpClient(wifi, serverAddress, port);
+
+  
+ 
+
+
+  
+
+
+  
+
+
 
   // Initialize the HTTP client
  
@@ -54,9 +69,36 @@ void loop() {
     Serial.println("Wifi is lost");
     WiFi.begin(ssid, password);
     delay(5000);
+    // make 
+
+
+ 
+
 
   }
 
+  
+    if (!client.connect("192.168.45.120", 80)) {
+    Serial.println("Connection failed");
+    return;
+  }else{
+    Serial.println("Sucess");
+
+    client.print(String("GET / HTTP/1.1\r\n") +
+               "Host: 192.168.45.120\r\n" +
+               "Connection: close\r\n\r\n");
+  while(client.available() == 0) {
+    delay(1);
+  }
+  String response = client.readStringUntil('\r');
+  int httpCode = response.substring(9, 12).toInt();
+  Serial.println("HTTP response code: " + String(httpCode));
+  delay(10000);
+
+
+  }
+
+  
 
 
 }
