@@ -82,18 +82,28 @@ void loop() {
     Serial.println("Connection failed");
     return;
   }else{
-    Serial.println("Sucess");
 
-    client.print(String("GET / HTTP/1.1\r\n") +
+ if (!client.connect("192.168.45.120", 80)) {
+    Serial.println("Connection failed");
+    return;
+  }
+  String payload = "rssi=10&adress=abc";
+  client.print(String("POST /php/index.php HTTP/1.1\r\n") +
                "Host: 192.168.45.120\r\n" +
-               "Connection: close\r\n\r\n");
+               "Content-Type: application/x-www-form-urlencoded\r\n" +
+               "Content-Length: " + payload.length() + "\r\n" +
+               "Connection: close\r\n\r\n" +
+               payload);
   while(client.available() == 0) {
     delay(1);
   }
-  String response = client.readStringUntil('\r');
-  int httpCode = response.substring(9, 12).toInt();
-  Serial.println("HTTP response code: " + String(httpCode));
+  String response = client.readString();
+  Serial.println(response);
   delay(10000);
+    
+
+
+
 
 
   }
