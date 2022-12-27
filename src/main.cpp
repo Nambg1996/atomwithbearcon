@@ -2,11 +2,12 @@
 #include <iostream>
 #include <iostream>
 #include <ArduinoHttpClient.h>
-
-const char* ssid = "ASUKA5";
-const char* password = "2019kyohei2019";
-//const char* ssid = "Galaxy A71A1D5";
-//const char* password = "ycup4087";
+#include <Ethernet.h>
+#include <WiFi101.h>
+//const char* ssid = "ASUKA5";
+//const char* password = "2019kyohei2019";
+const char* ssid = "Galaxy A71A1D5";
+const char* password = "ycup4087";
 
 void setup() {
 
@@ -22,6 +23,19 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(ssid);
   Serial.println(WiFi.localIP());
+
+  byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+  IPAddress ip(192, 168, 1, 177);
+
+  HttpClient client = HttpClient(wifi, serverAddress, port);
+
+  // Initialize the HTTP client
+ 
+
+ 
+
+
+  
 }
 
 void loop() {
@@ -39,7 +53,7 @@ void loop() {
     while (WiFi.status() == WL_DISCONNECTED ) {
     Serial.println("Wifi is lost");
     WiFi.begin(ssid, password);
-    delay(500);
+    delay(5000);
 
   }
 
