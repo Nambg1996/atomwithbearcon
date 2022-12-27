@@ -1,79 +1,119 @@
-/*
-  Scan
 
-  This example scans for Bluetooth® Low Energy peripherals and prints out their advertising details:
-  address, local name, advertised service UUID's.
-
-  The circuit:
-  - Arduino MKR WiFi 1010, Arduino Uno WiFi Rev2 board, Arduino Nano 33 IoT,
-    Arduino Nano 33 BLE, or Arduino Nano 33 BLE Sense board.
-
-  This example code is in the public domain.
-*/
 
 #include <ArduinoBLE.h>
+#include <WiFi.h>
+
+/* #include <libpq-fe.h>
+#include <stdlib.h>
+#include <string.h>
+ */
 
 
-void setup() {
+void setup()
+{
+
+ 
   Serial.begin(115200);
+  WiFi.begin("ASUKA5", "2019kyohei2019");
   while (!Serial);
 
   // begin initialization
-  if (!BLE.begin()) {
+  if (!BLE.begin())
+  {
     Serial.println("starting Bluetooth® Low Energy module failed!");
 
-    while (1);
+    while (1)
+      ;
   }
-
-  Serial.println("Bluetooth® Low Energy Central scan");
-
-  // start scanning for peripheral
-  BLE.scan();
+  // start scanning for peripherals
+  BLE.scanForUuid("feaa");
 }
 
-
-
-void loop() {
+void loop()
+{
   // check if a peripheral has been discovered
+
+  
   BLEDevice peripheral = BLE.available();
 
-  if (peripheral) {
-    // discovered a peripheral
-    Serial.println("Discovered a peripheral");
-    Serial.println("-----------------------");
 
-    // print address
-    Serial.print("Address: ");
-    Serial.println(peripheral.address());
+  if (peripheral)
+  {
+    // discovered a peripheral, print out address, local name, and advertised service
+    // Serial.print("Found ");
+    // Serial.print(peripheral.address());
+    // Serial.print(" '");
+    // Serial.print(peripheral.localName());
+    // Serial.print("' ");
+    // Serial.print(peripheral.advertisedServiceUuid());
+    // Serial.println();
+     
+       BLE.stopScan();
 
-    // print the local name, if present
-    if (peripheral.hasLocalName()) {
-      Serial.print("Local Name: ");
-      Serial.println(peripheral.localName());
-    }
 
-    // print the advertised service UUIDs, if present
-    if (peripheral.hasAdvertisedServiceUuid()) {
-      Serial.print("Service UUIDs: ");
-      for (int i = 0; i < peripheral.advertisedServiceUuidCount(); i++) {
-        Serial.print(peripheral.advertisedServiceUuid(i));
-        Serial.print(" ");
+       Serial.println("status of conected ...");
+      
+       
 
-        if(peripheral.advertisedServiceUuid(i)=="feaa"){
+       if (peripheral.connect()) {
+          Serial.println("Connected");
 
-          Serial.print("this is device for BEACON");
+     while (1){
 
-        }
-
-      }
-      Serial.println();
-    }
-
-    // print the RSSI
-    Serial.print("RSSI: ");
-    Serial.println(peripheral.rssi());
-
-    Serial.println();
     
+
+       Serial.print("this is a device for beacon ");
+      // BLE.stopScan();
+      Serial.print("RSSI: ");
+      Serial.println(peripheral.rssi());
+      Serial.println("Adress: ");
+      Serial.println(peripheral.address());
+      delay(3000);
+      BLEService batteryService = peripheral.service("180f");
+
+    if (batteryService) {
+      // use the service
+      if (batteryService.hasCharacteristic("2a19")) {
+        Serial.println("Battery service has battery level characteristic");
+      }
+    } else {
+      Serial.println("Peripheral does NOT have battery service");
+    }
+
+     }
+
+
+
+     
+  if (WiFi.status() == WL_CONNECTED) {
+    // WiFi is connected
+     Serial.println("WiFi is connected");
+
+
+  } else {
+    // WiFi is not connected
+    Serial.println("WiFi is not connected");
   }
+     
+
+
+
+
+
+    } else {
+      Serial.println("Failed to connect!");
+      return;
+    } 
+      
+
+
+      
+      // discover peripheral attributes
+     
+// battery
+
+  }
+
+  
+  
 }
