@@ -8,7 +8,7 @@
 #include "myWifi.h"
 #include <iostream>
 #include "postDataToServer.h"
-
+#include <string>
 using namespace std;
 
 
@@ -17,7 +17,23 @@ void runFunction() {
   Serial.println("Function ran!");
 }
 
+void getSignalQuality(int rssi) {
+  if (rssi >= -60 && rssi <= -34) {
+    
+    digitalWrite(33, HIGH);
+  } else if (rssi >= -80 && rssi < -61) {
+    digitalWrite(33, HIGH);
+  } else if (rssi <-81 && rssi >= -100) {
+    digitalWrite(33, LOW);                                                               
+  } else {
+     digitalWrite(33, LOW);
+  }
+}
+
 void setup() {
+
+  pinMode(33, OUTPUT);   // set pin 33 to output mode
+  digitalWrite(33, LOW);
   Serial.begin(115200);
   setupWifi(ssid, password);
    BLE.begin();
@@ -27,12 +43,14 @@ void setup() {
 
 
 
+
 }
 
 void loop() {
     // your code goes here
     //runFunctionAfterDelay(5000, runFunction);
-    //wifiReconnectWhenLost(ssid, password);
+  
+    wifiReconnectWhenLost(ssid, password);
 
    
 
@@ -41,32 +59,42 @@ void loop() {
    Serial.println("peripheral ::!");
    Serial.println(peripheral.advertisedServiceUuid());
 
-        if (peripheral.advertisedServiceUuid()=="feaa") {
+        if (peripheral.advertisedServiceUuid()=="feaa"||peripheral.address()=="cd:09:fe:8f:7f:1a") {
+
+          
           // get RSSI value for the peripheral
           int rssi = peripheral.rssi();
-          String adressUUId= peripheral.address();
+          String adressMac= peripheral.address();
 
           // print RSSI value
           Serial.print("RSSI: ");
           Serial.println(rssi);
           Serial.print("Adress: ");
-          Serial.println(adressUUId);
-          delay(1000);
+          Serial.println(adressMac);
+          Serial.println("type rssi:");
+
+          String rssiValue = std::to_string(rssi).c_str();
+          //std::string s = std::to_string(rssi);
+          getSignalQuality(rssi);
+          Serial.println(rssiValue);
+          postDataTowebServer(rssiValue,adressMac+"-"+peripheral.advertisedServiceUuid());
+          delay(milidelay);
+   
+        }else{
+
+          digitalWrite(33, LOW);
+
         }
 
-       
-   
-   
-
+  
     
-
-    String rssi = "10";
-    String address = "abc";
-    //postDataTowebServer(rssi,address);
 
 
 
     }
+
+
+
 
 
 

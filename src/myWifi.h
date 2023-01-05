@@ -13,5 +13,5 @@ void wifiReconnectWhenLost(const char* ssid, const char* password) {
     WiFi.begin(ssid, password);
     delay(5000);
   }
-  Serial.println("Successfully reconnected to wifi");
+  Serial.println("wifi still active");
 }
