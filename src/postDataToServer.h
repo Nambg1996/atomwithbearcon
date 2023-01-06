@@ -14,11 +14,11 @@ void postDataTowebServer(String rssi, String address)
   else
   {
 
-    if (!client.connect(localhost, port))
+    /* if (!client.connect(localhost, port))
     {
       Serial.println("Connection failed");
       return;
-    }
+    } */
 
     client.print(String(filedirectory) +
                  "Host: " + localhost + "\r\n" +
