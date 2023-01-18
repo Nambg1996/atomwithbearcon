@@ -9,6 +9,7 @@ void postDataTowebServer(String rssi, String address)
   if (!client.connect(localhost, port))
   {
     Serial.println("Connection failed");
+ 
     return;
   }
   else
@@ -30,9 +31,13 @@ void postDataTowebServer(String rssi, String address)
     {
       delay(1);
     }
-    // String response = client.readString();
-    // Serial.println(response);
+    String response = client.readString();
+    Serial.println(response);
+    
+    client.stop();
+    Serial.println("close client is sucessful");
     delay(1000);
+    
   }
 
   // function code goes here
