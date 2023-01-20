@@ -1,121 +1,116 @@
 #include <WiFi.h>
 #include <ArduinoBLE.h>
 #include <ArduinoHttpClient.h>
-// #include <Ethernet.h>
 #include <HTTPClient.h>
 #include "setting.h"
-// #include "runfunctionAfterDelays.h"
 #include "myWifi.h"
 #include <iostream>
 #include "postDataToServer.h"
 #include <string>
-// #include <random>
-// #include <array>
 #include <cstdlib>
 #include <ctime>
 #include <FastLED.h>
 #include <M5Atom.h>
 #include <esp_heap_caps.h>
 #include <esp_task_wdt.h>
+
+int buttonState = 0;
+unsigned long lastDebounceTime = 0; 
+const int debounceDelay = 50;
+
 hw_timer_t * timer = NULL;
-
-void IRAM_ATTR showMessageToConsole() {
-  // Code to be executed when the timer triggers
-  Serial.println("Timer triggered!");
-}
-
-
-
-
-
-
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 using namespace std;
 int previousMillis = 0;
 
-void getSignalQuality(int rssi)
-{
-  if (rssi >= -75 && rssi <= -28)
-  {
+volatile bool flagWifi = false;
+volatile bool flagRegister = false;
 
-    digitalWrite(33, HIGH); // light is on
 
-    delay(3000);
-  }
-  else
-  {
-    digitalWrite(33, LOW); // light is off
-  }
+void IRAM_ATTR buttonPressed() {
+    int reading = digitalRead(39);
+    if (reading != buttonState) {
+        lastDebounceTime = millis();
+    }
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+        buttonState = reading;
+        if (buttonState == LOW) {
+            Serial.println("Button pressed");
+        }
+    }
+}
+
+void intWifi(){
+
+int retries = 1;
+while(WiFi.status() != WL_CONNECTED && retries > 0) {
+    WiFi.begin(ssid, password);
+    delay(500);
+    retries--;
+}
+
+if(WiFi.status() != WL_CONNECTED){
+  //connection failed
+ Serial.println("connect wifi is not connected");
+  flagWifi = false;
+}
+else{
+  //connection success
+   Serial.println("connect wifi is good");
+  flagWifi = true;
+}
+
+}
+
+
+void IRAM_ATTR showMessageToConsole() {
+ portENTER_CRITICAL_ISR(&timerMux);
+
+  Serial.println("Free heap: " + String(ESP.getFreeHeap())); 
+  if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi connection lost. Reconnecting...");
+        flagWifi = false;
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("WiFi connection is good");
+        flagWifi = true;
+    } 
+
+
+  portEXIT_CRITICAL_ISR(&timerMux); 
+
+   
 }
 
 void setup()
 {
-
   Serial.begin(115200);
-  pinMode(33, OUTPUT);   // set pin 33 to output mode
-  digitalWrite(33, LOW); // light is off
-  setupWifi(ssid, password);
-  BLE.begin();
-  BLE.scan(); // start scanning for peripherals
-  esp_task_wdt_init(60, true);
-  esp_task_wdt_add(NULL);  
-  // st up timer
-  timer = timerBegin(0, 80, true); // timer index, divider, count up
+
+  pinMode(39, INPUT);
+  attachInterrupt(digitalPinToInterrupt(39), buttonPressed, FALLING);
+  timer = timerBegin(1, 80, true); // timer index, divider, count up
   timerAttachInterrupt(timer, &showMessageToConsole, true); // interrupt function, edge trigger
-  timerAlarmWrite(timer, 2000, true); // alarm value in microseconds, autoreload
-  //timerAlarmEnable(timer); 
-
-
+  timerAlarmWrite(timer, 2000000, true); // alarm value in microseconds, autoreload
+  timerAlarmEnable(timer); 
+  intWifi();
+  //connectWiFi();
 
 }
-
-
 
 
 void loop()
 {
 
-  unsigned long currentMillis = millis();
-  // Serial.print("Free memory: "+heap_caps_get_free_size(MALLOC_CAP_8BIT));
-  Serial.println("Free heap: " + String(ESP.getFreeHeap()));
-  if (ESP.getFreeHeap() < 25000)
-  {                // Check if the free heap is less than 2500 bytes
-    ESP.restart(); // Reset the device
-  }
 
-  // Check if 1 second has passed
-  if (currentMillis - previousMillis >= 8000)
-  {
-    // Reset the elapsed time tracker
-    BLE.stopScan();
-    //Serial.println("stop scan : ");
-    delay(500);
-    BLE.begin();
-    //Serial.println("scan again scan : ");
-    BLE.scan();
-    previousMillis = currentMillis;
-  }
-  else
-  {
+if(!flagWifi){
+intWifi();
+}
 
-    wifiReconnectWhenLost(ssid, password);
-    BLEDevice peripheral = BLE.available();
-    bool deviceTargetScan = peripheral.advertisedServiceUuid() == uuidBeacon || peripheral.address() == macBeacon;
 
-    if (deviceTargetScan)
-    {
 
-     
-      int rssi = peripheral.rssi();
-      String adressMac = peripheral.address();
-      String rssiValue = std::to_string(rssi).c_str();
-      //Serial.println(rssiValue);
-      getSignalQuality(rssi);
-      postDataTowebServer(rssiValue, adressMac + "-" + peripheral.advertisedServiceUuid());
-    }
-    else
-    {
+ 
+  
+delay(10000);
 
-      // device peripheral is not available
-    }
-  }
+  
 }

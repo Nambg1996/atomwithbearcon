@@ -1,7 +1,9 @@
 
 //wifi setting
-const char* ssid = "ASUKA5";
-const char* password = "2019kyohei2019";
+//const char* ssid = "ASUKA5";
+//const char* password = "2019kyohei2019";
+const char* ssid = "Galaxy A71A1D5";
+const char* password = "ycup4087";
 
 //webserver setting
 const int port = 80;

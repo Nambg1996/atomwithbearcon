@@ -3,6 +3,7 @@ void setupWifi(const char* ssid, const char* password) {
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(5000);
+    Serial.println("Waiting for establishing wifi connection...");
   }
 }
 
@@ -14,5 +15,5 @@ void wifiReconnectWhenLost(const char* ssid, const char* password) {
     delay(5000);
   }
   
-  //Serial.println("wifi still active");
+  Serial.println("wifi still active");
 }
