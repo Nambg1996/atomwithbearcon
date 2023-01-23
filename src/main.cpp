@@ -35,17 +35,20 @@ void IRAM_ATTR buttonPressed() {
     if ((millis() - lastDebounceTime) > debounceDelay) {
         buttonState = reading;
         if (buttonState == LOW) {
-            Serial.println("Button pressed");
+           // Serial.println("Button pressed");
+            flagRegister=true;
+
         }
     }
 }
 
 void intWifi(){
 
-int retries = 1;
+int retries = 2;
 while(WiFi.status() != WL_CONNECTED && retries > 0) {
+    Serial.println("attempting to connect");
     WiFi.begin(ssid, password);
-    delay(500);
+    delay(1000);
     retries--;
 }
 
@@ -65,15 +68,21 @@ else{
 
 void IRAM_ATTR showMessageToConsole() {
  portENTER_CRITICAL_ISR(&timerMux);
+          Serial.println("wifi status"); 
+        Serial.println(WiFi.status()); 
 
-  Serial.println("Free heap: " + String(ESP.getFreeHeap())); 
+  //Serial.println("Free heap: " + String(ESP.getFreeHeap())); 
   if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi connection lost. Reconnecting...");
         flagWifi = false;
+        Serial.println("flagWifi"); 
+        Serial.println(flagWifi); 
     }
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("WiFi connection is good");
         flagWifi = true;
+        Serial.println("flagWifi"); 
+        Serial.println(flagWifi); 
     } 
 
 
@@ -90,10 +99,13 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(39), buttonPressed, FALLING);
   timer = timerBegin(1, 80, true); // timer index, divider, count up
   timerAttachInterrupt(timer, &showMessageToConsole, true); // interrupt function, edge trigger
-  timerAlarmWrite(timer, 2000000, true); // alarm value in microseconds, autoreload
+  timerAlarmWrite(timer, 4000000, true); // alarm value in microseconds, autoreload
   timerAlarmEnable(timer); 
   intWifi();
-  //connectWiFi();
+
+  // intilaze bluetooth
+   BLE.begin();
+   BLE.scan();
 
 }
 
@@ -103,14 +115,42 @@ void loop()
 
 
 if(!flagWifi){
+    // connectWiFi again
 intWifi();
+}
+Serial.println("flag wifi on main loop");
+Serial.println(flagWifi);
+
+Serial.println("flagRegister");
+Serial.println(flagRegister);
+if(flagRegister){
+    // button pressed will triger to function
+  Serial.println("button pressed");
+  int countScan = 10;
+
+for (int i = 0; i < countScan; i++) {
+  BLEDevice peripheral = BLE.available();
+  if (peripheral) {
+    String address = peripheral.address();
+    int rssi = peripheral.rssi();
+    // Do something with the address
+    Serial.print("address: ");
+    Serial.println(address);
+     Serial.print("RSSI: ");
+          Serial.println(rssi);
+  }
+}
+  flagRegister=false;
 }
 
 
 
+   
+
+
  
   
-delay(10000);
+delay(1000);
 
   
 }
